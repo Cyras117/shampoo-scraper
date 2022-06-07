@@ -11,6 +11,7 @@ import (
 
 var mangaforestBaseURL = "https://mangaforest.com"
 
+//Gets the last 5 pages of updates from the site and returns
 func GetmangaforestLatestUpdatesPage() []model.Manga {
 	var listaMangas []model.Manga
 
