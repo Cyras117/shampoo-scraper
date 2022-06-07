@@ -45,3 +45,29 @@ func GetmangaforestLatestUpdatesPage() []model.Manga {
 	}
 	return listaMangas
 }
+
+//Searches on the mangaforest api for a manga with the specified phrase.
+func SearchMangamangaforest(phrase string) []model.Manga {
+	searchURL := "https://mangaforest.com/api/manga/search?q="
+	var mangas []model.Manga
+	requestURL := searchURL + phrase
+
+	res, err := http.Get(requestURL)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		log.Panic(err.Error())
+	}
+	defer res.Body.Close()
+	doc.Find("div.name").Each(
+		func(i int, s *goquery.Selection) {
+			title := s.Find("a").Text()
+			path, _ := s.Find("a").Attr("href")
+			mangas = append(mangas,
+				model.Manga{Title: title, Path: path, SiteURL: mangaforestBaseURL, ImgURL: ""})
+		},
+	)
+	return mangas
+}
