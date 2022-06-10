@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"shampoo-scraper/src/model"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -13,10 +14,15 @@ import (
 var readmBaseURL = "https://www.readm.org"
 
 //Gets the last 5 pages of updates from the site and returns
-func GetreadmLatestUpdatesPage() []model.Manga {
+func GetLatestUpdatesPage(a ...int) []model.Manga {
 	var listaMangas []model.Manga
+	qtdPages := 5
 
-	for i := 1; i < 6; i++ {
+	if len(a) != 0 {
+		qtdPages = a[0] + 1
+	}
+
+	for i := 1; i < qtdPages; i++ {
 		latestUpdatePageURL := readmBaseURL + fmt.Sprintf("/latest-releases/%d", i)
 
 		res, err := http.Get(latestUpdatePageURL)
@@ -50,7 +56,7 @@ func GetreadmLatestUpdatesPage() []model.Manga {
 }
 
 //Gets all the mangas on the web site.
-func getAllMangasOnreadm() []model.Manga {
+func getAllMangas() []model.Manga {
 	stringBase := "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	var listaMangas []model.Manga
 
@@ -121,10 +127,16 @@ func isIn(phrase string, str string) bool {
 	return false
 }
 
+func errLogOutput(err error) {
+	if err != nil {
+		log.Output(5, err.Error())
+	}
+}
+
 //Searches on the readm website for a manga with the specified phrase.
-func SearchMangareadm(title string) []model.Manga {
+func SearchManga(title string) []model.Manga {
 	var searchResults []model.Manga
-	mangas := getAllMangasOnreadm()
+	mangas := getAllMangas()
 
 	for _, m := range mangas {
 		if isIn(title, m.Title) {
@@ -132,4 +144,38 @@ func SearchMangareadm(title string) []model.Manga {
 		}
 	}
 	return searchResults
+}
+
+func GetUpdatesForListOfmangas(list []model.Manga) []model.Manga {
+	var resList []model.Manga
+
+	for _, manga := range list {
+		fullURL := manga.SiteURL + manga.Path
+
+		res, err := http.Get(fullURL)
+		errLogOutput(err)
+
+		defer res.Body.Close()
+
+		doc, err := goquery.NewDocumentFromReader(res.Body)
+		errLogOutput(err)
+		lastep := doc.Find(".episodes-box a[data-tab]").First().Text()
+
+		lastep = strings.ReplaceAll(lastep, "CH", "")
+		lastep = strings.ReplaceAll(lastep, " ", "")
+		lastep = strings.Split(lastep, "-")[0]
+
+		if lastep == "" {
+			lastep = "0"
+		}
+
+		lep, err := strconv.ParseFloat(lastep, 64)
+		errLogOutput(err)
+
+		resList = append(resList, model.Manga{
+			Title: manga.Title, Path: manga.Path, SiteURL: manga.SiteURL,
+			ImgURL: manga.ImgURL, CurrentCh: lep, LastReadCh: manga.LastReadCh})
+	}
+
+	return resList
 }
