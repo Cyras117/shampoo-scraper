@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"shampoo-scraper/src/db"
@@ -14,7 +13,7 @@ import (
 func CreateUser(name string) {
 	var user model.User
 	user.Name = name
-	result, err := db.GetCollection().InsertOne(context.Background(), user)
+	result, err := db.GetUserCollection().InsertOne(db.GetContext(), user)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -22,23 +21,27 @@ func CreateUser(name string) {
 	println("User created: ", result.InsertedID)
 }
 
-func FindUser(name string) {
+func FindUsers(name string) []model.User {
 	var users []model.User
-	c := db.GetCollection()
+	c := db.GetUserCollection()
 
-	res, err := c.Find(context.Background(), bson.M{"name": name})
+	cursor, err := c.Find(db.GetContext(), bson.M{"name": name})
 	if err != nil {
 		panic(err.Error())
 	}
-	if err = res.All(context.Background(), &users); err != nil {
+	if err = cursor.All(db.GetContext(), &users); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(users)
-
+	defer cursor.Close(db.GetContext())
+	return users
 }
 
-//TODO:Not working yet
 func DeleteUser(name string) {
-	res, _ := db.GetCollection().DeleteOne(context.Background(), bson.M{"name": name})
+	res, _ := db.GetUserCollection().DeleteOne(db.GetContext(), bson.M{"name": name})
 	fmt.Printf("res: %v\n", res)
+}
+
+//TODO:Think about it
+func UpdateUser(id, name string, filter model.User) {
+
 }
