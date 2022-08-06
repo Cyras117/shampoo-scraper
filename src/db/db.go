@@ -2,15 +2,16 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const database = "test"
+
 func GetContext() context.Context {
 	//TODO:Check the cancel return
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx := context.Background()
 	return ctx
 }
 
@@ -25,9 +26,10 @@ func getClient() *mongo.Client {
 	return client
 }
 
-func GetUserCollection() *mongo.Collection {
-	return getClient().Database("test").Collection("user")
-}
 func GetMangaCollection() *mongo.Collection {
-	return getClient().Database("test").Collection("manga_list")
+	return getClient().Database(database).Collection("manga")
+}
+
+func GetListCollection() *mongo.Collection {
+	return getClient().Database(database).Collection("lists")
 }

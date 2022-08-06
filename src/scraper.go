@@ -10,7 +10,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var readmBaseURL = "https://www.readm.org"
+const readmBaseURL = "https://www.readm.org"
 
 //Returns the last n(MAX: 5) pages of updates from the site.
 func GetLatestUpdatesPage(n int) []model.Manga {
@@ -86,6 +86,7 @@ func GetAllMangas() []model.Manga {
 	return listaMangas
 }
 
+//TODO Check if it is still userfull
 //Returns a list of mangas with the passed phrase in the title.
 func SearchManga(title string) []model.Manga {
 	var searchResults []model.Manga
@@ -99,18 +100,51 @@ func SearchManga(title string) []model.Manga {
 	return searchResults
 }
 
-//TODO:Optmize it to go straight to the manga page
-func SearchMangaWithPath(path string) model.Manga {
-	var res model.Manga
-	mangas := GetAllMangas() // takes too long
-	//TODO:Treat in case nothing
-	for _, m := range mangas {
-		if isIn(path, m.Path) {
-			res = m
-		}
-	}
+//Grab information of that manga page
+func GetMangaWithPath(path string) model.Manga {
+	var mangaRsult model.Manga
 
-	return res
+	pathResult := strings.ReplaceAll(path, "/", "")
+
+	mangaURL := fmt.Sprint(readmBaseURL, "/manga/", pathResult)
+
+	res, err := http.Get(mangaURL)
+	errLogOutput(err)
+
+	//TODO add treatment in case manga does not exist
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	errLogOutput(err)
+
+	defer res.Body.Close()
+
+	doc.Find("#router-view").Each(
+		func(i int, s *goquery.Selection) {
+			title := s.Find("#router-view > div > div.ui.grid > div.left.floated.sixteen.wide.tablet.eight.wide.computer.column > a > h1").Text()
+			imgPath, _ := s.Find("#series-profile-image-wrapper > img").Attr("src")
+			lastCh := s.Find("#seasons-menu > div > a.item.active").Text()
+			//Qtd chapters
+			//totalChs := s.Find("#series-profile-content-wrapper > article > div.media-meta > table > tbody > tr > td:nth-child(2) > div:nth-child(2)")
+
+			lastCh = strings.ReplaceAll(lastCh, "CH", "")
+			lastCh = strings.ReplaceAll(lastCh, " ", "")
+			lastCh = strings.Split(lastCh, "-")[0]
+			if lastCh == "" {
+				lastCh = "0"
+			}
+
+			lastChRes, err := strconv.ParseFloat(lastCh, 64)
+			errLogOutput(err)
+
+			mangaRsult.Path = path
+			mangaRsult.Title = title
+			mangaRsult.ImgURL = imgPath
+			mangaRsult.SiteURL = readmBaseURL
+			mangaRsult.CurrentCh = lastChRes
+		},
+	)
+
+	return mangaRsult
 }
 
 //Returns a list of mangas with the last released chapter.
@@ -118,38 +152,8 @@ func GetLastChMangasList(list []model.Manga) []model.Manga {
 	var resList []model.Manga
 	for _, manga := range list {
 
-		resList = append(resList, GetLastChManga(manga))
+		resList = append(resList, GetMangaWithPath(manga.Path))
 	}
 
 	return resList
-}
-
-//Returns a manga with the last released chapter.
-func GetLastChManga(manga model.Manga) model.Manga {
-
-	fullURL := manga.SiteURL + manga.Path
-
-	res, err := http.Get(fullURL)
-	errLogOutput(err)
-
-	defer res.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	errLogOutput(err)
-	lastep := doc.Find(".episodes-box a[data-tab]").First().Text()
-
-	lastep = strings.ReplaceAll(lastep, "CH", "")
-	lastep = strings.ReplaceAll(lastep, " ", "")
-	lastep = strings.Split(lastep, "-")[0]
-
-	if lastep == "" {
-		lastep = "0"
-	}
-
-	lep, err := strconv.ParseFloat(lastep, 64)
-	errLogOutput(err)
-
-	return model.Manga{
-		Title: manga.Title, Path: manga.Path, SiteURL: manga.SiteURL,
-		ImgURL: manga.ImgURL, CurrentCh: lep, LastReadCh: manga.LastReadCh}
 }
