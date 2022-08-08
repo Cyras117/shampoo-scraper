@@ -112,5 +112,14 @@ func AddMangaToList(listName, mangaPath string) {
 
 //TODO
 func RemoveMangaFromList(listName, mangaPath string) {
+}
 
+func findIfMangaIsInAList(listName, mangaPath string) bool {
+	list := FindList(listName)
+	for _, m := range list.Collection {
+		if mangaPath == m {
+			return true
+		}
+	}
+	return false
 }
