@@ -86,7 +86,6 @@ func GetAllMangas() []model.Manga {
 	return listaMangas
 }
 
-// TODO Check if it is still userfull
 // Returns a list of mangas with the passed phrase in the title.
 func SearchManga(title string) []model.Manga {
 	var searchResults []model.Manga
