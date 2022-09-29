@@ -1,11 +1,14 @@
 package scraper
 
 import (
+	"errors"
 	"log"
+	"os"
 	"strings"
+	"time"
 )
 
-//check if a string is inside another.
+// check if a string is inside another.
 func isIn(phrase string, str string) bool {
 
 	p := strings.ToLower(phrase)
@@ -34,9 +37,40 @@ func isIn(phrase string, str string) bool {
 	return false
 }
 
-//Log errors on console
+// Log errors on console//TODO apagar talvez
 func errLogOutput(err error) {
 	if err != nil {
 		log.Output(5, err.Error())
 	}
+}
+
+func CheckIfFileExists(filepath string) bool {
+	_, err := os.Stat(filepath)
+	return !errors.Is(err, os.ErrNotExist)
+}
+
+func CreateFile(filename string) {
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+}
+
+func DeleFile(filename string) {
+	err := os.Remove(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func CheckLastModified(fileName string) time.Time {
+
+	fileInfo, err := os.Stat(fileName)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return fileInfo.ModTime()
 }

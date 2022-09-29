@@ -12,7 +12,7 @@ import (
 
 const readmBaseURL = "https://www.readm.org"
 
-//Returns the last n(MAX: 5) pages of updates from the site.
+// Returns the last n(MAX: 5) pages of updates from the site.
 func GetLatestUpdatesPage(n int) []model.Manga {
 	var listaMangas []model.Manga
 	qtdPages := n + 1
@@ -48,7 +48,7 @@ func GetLatestUpdatesPage(n int) []model.Manga {
 	return listaMangas
 }
 
-//Returns a list with all the mangas on the site.
+// Returns a list with all the mangas on the site.
 func GetAllMangas() []model.Manga {
 	stringBase := "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	var listaMangas []model.Manga
@@ -86,8 +86,8 @@ func GetAllMangas() []model.Manga {
 	return listaMangas
 }
 
-//TODO Check if it is still userfull
-//Returns a list of mangas with the passed phrase in the title.
+// TODO Check if it is still userfull
+// Returns a list of mangas with the passed phrase in the title.
 func SearchManga(title string) []model.Manga {
 	var searchResults []model.Manga
 	mangas := GetAllMangas()
@@ -100,7 +100,7 @@ func SearchManga(title string) []model.Manga {
 	return searchResults
 }
 
-//Grab information of that manga page
+// Grab information of that manga page
 func GetMangaWithPath(path string) model.Manga {
 	var mangaRsult model.Manga
 
@@ -147,7 +147,7 @@ func GetMangaWithPath(path string) model.Manga {
 	return mangaRsult
 }
 
-//Returns a list of mangas with the last released chapter.
+// Returns a list of mangas with the last released chapter.
 func GetLastChMangasList(list []model.Manga) []model.Manga {
 	var resList []model.Manga
 	for _, manga := range list {
