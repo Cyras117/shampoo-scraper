@@ -1,13 +1,11 @@
-package scraper
+package utils
 
 import (
 	"log"
 	"strings"
 )
 
-// check if a string is inside another.
-func isIn(phrase string, str string) bool {
-
+func IsIn(phrase string, str string) bool {
 	p := strings.ToLower(phrase)
 	s := strings.ToLower(str)
 
@@ -35,7 +33,7 @@ func isIn(phrase string, str string) bool {
 }
 
 // Log errors on console//TODO apagar talvez
-func errLogOutput(err error) {
+func ErrLogOutput(err error) {
 	if err != nil {
 		log.Output(5, err.Error())
 	}

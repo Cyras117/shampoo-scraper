@@ -1,10 +1,10 @@
-package scraper
+package scrapers
 
 import (
 	"fmt"
 	"net/http"
 	"shampoo-scraper/src/model"
-	"strconv"
+	"shampoo-scraper/src/utils"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -12,8 +12,9 @@ import (
 
 const readmBaseURL = "https://www.readm.org"
 
-// Returns the last n(MAX: 5) pages of updates from the site.
-func GetLatestUpdatesPage(n int) []model.Manga {
+//https://readm.org/searchController/index?search=the+extra+is
+
+func ReadmGetLatestUpdatesPage(n int) []model.Manga {
 	var listaMangas []model.Manga
 	qtdPages := n + 1
 
@@ -25,23 +26,21 @@ func GetLatestUpdatesPage(n int) []model.Manga {
 		latestUpdatePageURL := readmBaseURL + fmt.Sprintf("/latest-releases/%d", i)
 
 		res, err := http.Get(latestUpdatePageURL)
-		errLogOutput(err)
+		utils.ErrLogOutput(err)
 
 		defer res.Body.Close()
 
 		doc, err := goquery.NewDocumentFromReader(res.Body)
-		errLogOutput(err)
+		utils.ErrLogOutput(err)
 
 		doc.Find("ul.clearfix.latest-updates li.segment-poster-sm").Each(
 			func(i int, s *goquery.Selection) {
 				node := s.Find("h2")
 				title := node.Find("a").Text()
 				path, _ := node.Find("a").Attr("href")
-				node = s.Find("img")
-				imgPath, _ := node.Attr("data-src")
 
 				listaMangas = append(listaMangas,
-					model.Manga{Title: title, Path: path, SiteURL: readmBaseURL, ImgURL: imgPath})
+					model.Manga{Title: title, Path: path, SiteURL: readmBaseURL})
 			},
 		)
 	}
@@ -49,7 +48,7 @@ func GetLatestUpdatesPage(n int) []model.Manga {
 }
 
 // Returns a list with all the mangas on the site.
-func GetAllMangas() []model.Manga {
+func ReadmGetAllMangas() []model.Manga {
 	stringBase := "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	var listaMangas []model.Manga
 
@@ -64,22 +63,21 @@ func GetAllMangas() []model.Manga {
 		}
 
 		res, err := http.Get(AllMangasPageURL)
-		errLogOutput(err)
+		utils.ErrLogOutput(err)
 
 		defer res.Body.Close()
 
 		doc, err := goquery.NewDocumentFromReader(res.Body)
-		errLogOutput(err)
+		utils.ErrLogOutput(err)
 
 		doc.Find("li.segment-poster-sm").Each(
 			func(i int, s *goquery.Selection) {
 				node := s.Find("div.poster")
 				path, _ := node.Find("a").Attr("href")
 				title := node.Find("h2.truncate").Text()
-				imgPath, _ := node.Find("img.lazy-wide").Attr("data-src")
 
 				listaMangas = append(listaMangas,
-					model.Manga{Title: title, Path: path, SiteURL: readmBaseURL, ImgURL: imgPath})
+					model.Manga{Title: title, Path: path, SiteURL: readmBaseURL})
 			},
 		)
 	}
@@ -89,10 +87,10 @@ func GetAllMangas() []model.Manga {
 // Returns a list of mangas with the passed phrase in the title.
 func SearchManga(title string) []model.Manga {
 	var searchResults []model.Manga
-	mangas := GetAllMangas()
+	mangas := ReadmGetAllMangas()
 
 	for _, m := range mangas {
-		if isIn(title, m.Title) {
+		if utils.IsIn(title, m.Title) {
 			searchResults = append(searchResults, m)
 		}
 	}
@@ -108,19 +106,18 @@ func GetMangaWithPath(path string) model.Manga {
 	mangaURL := fmt.Sprint(readmBaseURL, "/manga/", pathResult)
 
 	res, err := http.Get(mangaURL)
-	errLogOutput(err)
+	utils.ErrLogOutput(err)
 
 	//TODO add treatment in case manga does not exist
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
-	errLogOutput(err)
+	utils.ErrLogOutput(err)
 
 	defer res.Body.Close()
 
 	doc.Find("#router-view").Each(
 		func(i int, s *goquery.Selection) {
 			title := s.Find("#router-view > div > div.ui.grid > div.left.floated.sixteen.wide.tablet.eight.wide.computer.column > a > h1").Text()
-			imgPath, _ := s.Find("#series-profile-image-wrapper > img").Attr("src")
 			lastCh := s.Find("#seasons-menu > div > a.item.active").Text()
 			//Qtd chapters
 			//totalChs := s.Find("#series-profile-content-wrapper > article > div.media-meta > table > tbody > tr > td:nth-child(2) > div:nth-child(2)")
@@ -131,15 +128,11 @@ func GetMangaWithPath(path string) model.Manga {
 			if lastCh == "" {
 				lastCh = "0"
 			}
-
-			lastChRes, err := strconv.ParseFloat(lastCh, 64)
-			errLogOutput(err)
+			//utils.ErrLogOutput(err)
 
 			mangaRsult.Path = path
 			mangaRsult.Title = title
-			mangaRsult.ImgURL = imgPath
 			mangaRsult.SiteURL = readmBaseURL
-			mangaRsult.CurrentCh = lastChRes
 		},
 	)
 
