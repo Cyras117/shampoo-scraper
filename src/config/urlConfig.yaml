@@ -1,0 +1,6 @@
+asuraConfig:
+  baseUrl: "https://asura.nacm.xyz"
+  searchUrl: "/?s="
+readmConfig:
+  baseUrl: "https://readm.org/"
+  searchUrl: "/searchController/index?search="

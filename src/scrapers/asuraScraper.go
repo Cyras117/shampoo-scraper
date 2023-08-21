@@ -1,6 +1,7 @@
 package scrapers
 
 import (
+	"log"
 	"net/http"
 	nodeWrapper "shampoo-scraper/src/htmlWrapper"
 	"shampoo-scraper/src/utils"
@@ -8,10 +9,21 @@ import (
 	"golang.org/x/net/html"
 )
 
-// criar uma funçao para carregar isso do yaml
-const baseURL string = "https://asura.nacm.xyz/"
+const asuraConfigKey = "asuraConfig"
 
-//https://asura.nacm.xyz/?s=The+extra
+var asuraConfig interface{}
+
+func loadasuraConfig() {
+	readmConfig = utils.ConfigLoader()[asuraConfigKey]
+	log.Println("Asura config File Loaded!!\n")
+}
+
+func checkAsuraConfigFileIsLoaded() {
+	if readmConfig == nil {
+		loadasuraConfig()
+	}
+	return
+}
 
 func AsuraGetLestEpUrl(url string) string {
 	resp, err := http.Get(url)
