@@ -32,7 +32,7 @@ func IsIn(phrase string, str string) bool {
 	return false
 }
 
-// Log errors on console//TODO apagar talvez
+// Log errors on console//
 func ErrLogOutput(err error) {
 	if err != nil {
 		log.Output(5, err.Error())

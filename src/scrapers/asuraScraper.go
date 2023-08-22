@@ -1,28 +1,47 @@
 package scrapers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	nodeWrapper "shampoo-scraper/src/htmlWrapper"
+	hw "shampoo-scraper/src/htmlWrapper"
+	"shampoo-scraper/src/model"
 	"shampoo-scraper/src/utils"
+	"strings"
 
 	"golang.org/x/net/html"
 )
 
 const asuraConfigKey = "asuraConfig"
 
-var asuraConfig interface{}
+var asuraConfig model.StiteConfig
 
 func loadasuraConfig() {
-	readmConfig = utils.ConfigLoader()[asuraConfigKey]
-	log.Println("Asura config File Loaded!!\n")
+	asuraConfig = utils.ConfigLoader()[asuraConfigKey]
+	log.Println("Asura config File Loaded!!")
 }
 
 func checkAsuraConfigFileIsLoaded() {
-	if readmConfig == nil {
+	if asuraConfig == nil {
 		loadasuraConfig()
 	}
-	return
+}
+
+func AsuraFindSerieUrlByName(name string) string {
+	checkAsuraConfigFileIsLoaded()
+	reqName := strings.ReplaceAll(name, " ", asuraConfig["separator"])
+	rootNode := hw.GetUrl(fmt.Sprintf(asuraConfig["baseUrl"] + asuraConfig["searchUrl"] + reqName))
+	node := hw.SearchFirstNodeOccurrence(rootNode, "title", name, "a")
+	var actualSeriesUrl string
+
+	for _, a := range node.Attr {
+		if a.Key == "href" {
+			{
+				actualSeriesUrl = a.Val
+			}
+		}
+	}
+	return actualSeriesUrl
 }
 
 func AsuraGetLestEpUrl(url string) string {
@@ -35,6 +54,6 @@ func AsuraGetLestEpUrl(url string) string {
 	if err != nil {
 		utils.ErrLogOutput(err)
 	}
-	n := nodeWrapper.SearchFirstNodeOccurrence(rootNode, "class", "eph-num", "div")
+	n := hw.SearchFirstNodeOccurrence(rootNode, "class", "eph-num", "div")
 	return n.FirstChild.NextSibling.Attr[0].Val
 }
