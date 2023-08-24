@@ -7,6 +7,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Check the [node] contains the same data attribute and value
 func checkMatch(node *html.Node, data, atrr, value string) bool {
 	if node.Attr == nil {
 		return false
@@ -29,7 +30,11 @@ func checkMatch(node *html.Node, data, atrr, value string) bool {
 	return false
 }
 
-// data,atrr,value
+/*
+Searches for a  node inside another node
+
+elements ex: "data|attr|value","data"
+*/
 func SearchForElementFirstMatch(node *html.Node, elements ...string) *html.Node {
 	if elements == nil {
 		return node
@@ -46,6 +51,10 @@ func SearchForElementFirstMatch(node *html.Node, elements ...string) *html.Node 
 	return auxNode
 }
 
+/*
+Searches for the first match of a node with the provided data,
+if not found it returns nill
+*/
 func SearchNodeByDataFirstMatch(node *html.Node, data string) *html.Node {
 	nodeResult := node
 
@@ -70,6 +79,9 @@ func SearchNodeByDataFirstMatch(node *html.Node, data string) *html.Node {
 	return nil
 }
 
+/*
+Searches for nodes with the provided data, attribute and value provided
+*/
 func SearchNodesByAtrr(node *html.Node, data, atrr, value string, result *[]html.Node) {
 	if checkMatch(node, atrr, value, data) {
 		*result = append(*result, *node)
@@ -84,6 +96,10 @@ func SearchNodesByAtrr(node *html.Node, data, atrr, value string, result *[]html
 	}
 }
 
+/*
+Searches for nodes with the provided data, attribute and value provided
+if not found it returns nill
+*/
 func SearchNodeByAtrrFirstMatch(node *html.Node, data, atrr, value string) *html.Node {
 	nodeResult := node
 
