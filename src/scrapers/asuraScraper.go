@@ -48,10 +48,22 @@ func AsuraFindSerieUrlByName(name string) string {
 	return returnValFromKey(node, "href")
 }
 
-func AsuraGetLestEpUrl(url string) string {
-	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(url), "div|class|eph-num", "a"), "href")
+func AsuraGetLastChByUrl(urlSerie string) string {
+	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(urlSerie), "div|class|eph-num", "a"), "href")
 }
 
-func AsuraGetLestEpNumber(url string) string {
-	return hw.SearchForElementFirstMatch(hw.GetUrl(url), "div|class|eph-num", "span|class|chapternum").FirstChild.Data
+func AsuraGetFirstChByUrl(urlSerie string) string {
+	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(urlSerie), "li|data-num|1", "a"), "href")
+}
+
+func AsuraGetLastChByName(nameSerie string) string {
+	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(AsuraFindSerieUrlByName(nameSerie)), "div|class|eph-num", "a"), "href")
+}
+
+func AsuraGetFirstChByName(nameSerie string) string {
+	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(AsuraFindSerieUrlByName(nameSerie)), "li|data-num|1", "a"), "href")
+}
+
+func AsuraGetLestChNumber(urlSerie string) string {
+	return hw.SearchForElementFirstMatch(hw.GetUrl(urlSerie), "div|class|eph-num", "span|class|chapternum").FirstChild.Data
 }
