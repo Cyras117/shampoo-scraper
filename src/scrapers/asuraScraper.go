@@ -52,6 +52,10 @@ func AsuraGetLastChByUrl(urlSerie string) string {
 	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(urlSerie), "div|class|eph-num", "a"), "href")
 }
 
+func AsuraGetChUrlByNameNumber(name string, number int) string {
+	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(AsuraFindSerieUrlByName(name)), fmt.Sprintf("li|data-num|%d", number), "a"), "href")
+}
+
 func AsuraGetFirstChByUrl(urlSerie string) string {
 	return returnValFromKey(hw.SearchForElementFirstMatch(hw.GetUrl(urlSerie), "li|data-num|1", "a"), "href")
 }
