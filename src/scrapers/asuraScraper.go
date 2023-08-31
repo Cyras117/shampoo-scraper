@@ -29,6 +29,8 @@ Verify if config file is loaded already
 func checkAsuraConfigFileIsLoaded() {
 	if asuraConfig == nil {
 		loadasuraConfig()
+	} else {
+		fmt.Println("Asura config File already Loaded!!")
 	}
 }
 

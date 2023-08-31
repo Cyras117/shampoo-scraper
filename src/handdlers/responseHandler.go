@@ -12,7 +12,7 @@ type response struct {
 /*
 Respose struct to handle the system reponses
 */
-type responsesStruct struct {
+type ResReqHanddler struct {
 	status    string
 	responses []response
 }
